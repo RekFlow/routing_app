@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Search</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        form { margin-bottom: 20px; }
+        label, input, select { display: block; margin-bottom: 10px; }
+        #results { list-style-type: none; padding: 0; }
+        #results li { margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Search for Practices</h1>
+    <form id="searchForm">
+        <label for="location">Enter your location (zip code):</label>
+        <input type="text" id="location" name="location" required>
+
+        <label for="insurance">Select insurance:</label>
+        <select id="insurance" name="insurance" required>
+            <option value="">Select insurance</option>
+            <option value="Florida Blue">Florida Blue</option>
+            <option value="Medicare">Medicare</option>
+            <option value="Medicaid">Medicaid</option>
+        </select>
+
+        <label for="specialty">Enter specialty (optional):</label>
+        <input type="text" id="specialty" name="specialty">
+
+        <button type="submit">Search</button>
+    </form>
+
+    <h2>Search Results</h2>
+    <ul id="results"></ul>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const results = document.getElementById('results');
+            results.innerHTML = 'Searching...';
+
+            fetch('/search', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                results.innerHTML = '';
+                if (data.length === 0) {
+                    results.innerHTML = 'No results found.';
+                    return;
+                }
+                data.forEach(provider => {
+                    const li = document.createElement('li');
+                    // Proper use of template literals, with the whole string inside `${}`
+                    li.innerHTML = `
+                        <strong>${provider.name}</strong><br />
+                        Address: ${provider.address}<br />
+                        Specialty: ${provider.specialty}<br />
+                        Insurance: ${provider.insurance_accepted.join(', ')}
+                    `;
+                    results.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                results.innerHTML = 'An error occurred while searching. Please try again.';
+            });
+        });
+    </script>
+</body>
+</html>

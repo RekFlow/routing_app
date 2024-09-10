@@ -1,0 +1,4 @@
+flask
+requests
+googlemaps
+python-dotenv
